@@ -21,20 +21,22 @@ use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
 use config::{init_database, init_logging, ApiDoc, AppState};
-use controllers::{HealthController, UserController};
-use services::UserService;
+use controllers::{HealthController, PostController, UserController};
+use services::{PostService, UserService};
 
 /// Build the application router
 fn build_router(state: Arc<AppState>) -> Router {
-    // Routes with state (User controller)
-    let api_routes = UserController::routes();
+    // Routes with state
+    let user_routes = UserController::routes();
+    let post_routes = PostController::routes();
 
     // Health routes (no state needed)
     let health_routes = HealthController::routes();
 
     Router::new()
-        // Merge user routes first (they need state)
-        .merge(api_routes)
+        // Merge routes that need state
+        .merge(user_routes)
+        .merge(post_routes)
         // Then apply state
         .with_state(state)
         // Then merge stateless routes
@@ -77,10 +79,11 @@ async fn main() {
     let db = init_database().await;
 
     // Create services
-    let user_service = UserService::new(db);
+    let user_service = UserService::new(db.clone());
+    let post_service = PostService::new(db);
 
     // Create application state
-    let state = Arc::new(AppState::new(user_service));
+    let state = Arc::new(AppState::new(user_service, post_service));
 
     // Build router with all routes
     let app = build_router(state);

@@ -32,7 +32,17 @@ pub struct Model {
 /// Relations
 /// Equivalent de: #[ORM\OneToMany], #[ORM\ManyToOne], etc.
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(has_many = "super::post::Entity")]
+    Posts,
+}
+
+/// Relation: User has many Posts
+impl Related<super::post::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Posts.def()
+    }
+}
 
 /// Active Model Behavior
 impl ActiveModelBehavior for ActiveModel {}

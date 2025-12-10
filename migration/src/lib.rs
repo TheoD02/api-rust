@@ -2,6 +2,7 @@ pub use sea_orm_migration::prelude::*;
 
 // Liste des migrations (comme le dossier migrations/ en Doctrine)
 mod m20241210_000001_create_users_table;
+mod m20241210_000002_create_posts_table;
 
 pub struct Migrator;
 
@@ -11,6 +12,7 @@ impl MigratorTrait for Migrator {
         // Ajoute tes nouvelles migrations ici dans l'ordre chronologique
         vec![
             Box::new(m20241210_000001_create_users_table::Migration),
+            Box::new(m20241210_000002_create_posts_table::Migration),
         ]
     }
 }

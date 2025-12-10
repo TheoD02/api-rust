@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo check:*)",
+      "Bash(pkill:*)",
+      "Bash(find:*)",
+      "Bash(cargo test:*)",
+      "Bash(cat:*)",
+      "Bash(git -C /Users/theodulieu/workspaces/personal/rust-app/rust-api log --oneline)"
+    ]
+  }
+}

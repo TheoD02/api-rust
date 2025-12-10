@@ -3,11 +3,19 @@
 
 use utoipa::OpenApi;
 
-use crate::controllers::health_controller::{__path_index, __path_health};
-use crate::controllers::user_controller::{
-    __path_list_users, __path_get_user, __path_create_user, __path_update_user, __path_delete_user
+use crate::controllers::health_controller::{__path_health, __path_index};
+use crate::controllers::post_controller::{
+    __path_create_post, __path_delete_post, __path_get_post, __path_list_posts, __path_update_post,
 };
-use crate::dto::{CreateUserDto, PaginationQuery, UpdateUserDto, UserResponse};
+use crate::controllers::user_controller::{
+    __path_create_user, __path_delete_user, __path_get_user, __path_list_users, __path_update_user,
+};
+use crate::dto::{
+    AuthorResponse, CreatePostDto, CreatePostMetadataDto, CreatePostSettingsDto,
+    CreateSeoMetadataDto, CreateTagDto, CreateUserDto, PaginationQuery, PostListItemResponse,
+    PostMetadataResponse, PostResponse, PostSettingsResponse, SeoMetadataResponse, TagResponse,
+    UpdatePostDto, UpdateUserDto, UserResponse,
+};
 use crate::error::ErrorResponse;
 use crate::response::PaginationMeta;
 
@@ -36,15 +44,37 @@ use crate::response::PaginationMeta;
         create_user,
         update_user,
         delete_user,
+        // Post endpoints
+        list_posts,
+        get_post,
+        create_post,
+        update_post,
+        delete_post,
     ),
     components(
         schemas(
-            // DTOs
+            // User DTOs
             CreateUserDto,
             UpdateUserDto,
             UserResponse,
+            // Post DTOs
+            CreatePostDto,
+            UpdatePostDto,
+            PostResponse,
+            PostListItemResponse,
+            // Nested objects - Input
+            CreatePostMetadataDto,
+            CreateTagDto,
+            CreateSeoMetadataDto,
+            CreatePostSettingsDto,
+            // Nested objects - Output
+            AuthorResponse,
+            PostMetadataResponse,
+            TagResponse,
+            SeoMetadataResponse,
+            PostSettingsResponse,
+            // Pagination
             PaginationQuery,
-            // Response
             PaginationMeta,
             // Error
             ErrorResponse,
@@ -52,7 +82,8 @@ use crate::response::PaginationMeta;
     ),
     tags(
         (name = "health", description = "Health check endpoints"),
-        (name = "users", description = "User management endpoints")
+        (name = "users", description = "User management endpoints"),
+        (name = "posts", description = "Post management with nested objects (tags, SEO, settings)")
     ),
     servers(
         (url = "http://localhost:8080", description = "Local development server"),
