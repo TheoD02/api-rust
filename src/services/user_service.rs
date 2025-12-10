@@ -8,17 +8,20 @@ use sea_orm::{
 };
 use tracing::{info, warn};
 
-use crate::dto::{CreateUserDto, PaginationQuery, UpdateUserDto, UserResponse};
+use crate::dto::{CreateUserDto, PaginationQuery, UpdateUserDto};
 use crate::entities::user;
-use crate::error::{ApiError, ApiResult};
+use crate::error::ServiceError;
 
-/// Paginated result
+/// Paginated result - returns entities, not DTOs
+/// Transformation to DTO is done in the controller
 pub struct PaginatedUsers {
-    pub users: Vec<UserResponse>,
+    pub users: Vec<user::Model>,
     pub total: u64,
 }
 
 /// UserService - Business logic for user management
+/// Returns entities (user::Model) - transformation to DTO is done in controllers
+/// Uses ServiceError for business logic errors (no HTTP concepts)
 #[derive(Clone)]
 pub struct UserService {
     db: DatabaseConnection,
@@ -31,7 +34,7 @@ impl UserService {
     }
 
     /// Find all users with pagination
-    pub async fn find_all(&self, pagination: &PaginationQuery) -> ApiResult<PaginatedUsers> {
+    pub async fn find_all(&self, pagination: &PaginationQuery) -> Result<PaginatedUsers, ServiceError> {
         info!(page = pagination.page, per_page = pagination.per_page, "Fetching users");
 
         // Get total count
@@ -54,14 +57,11 @@ impl UserService {
             "Users fetched successfully"
         );
 
-        Ok(PaginatedUsers {
-            users: users.into_iter().map(UserResponse::from).collect(),
-            total,
-        })
+        Ok(PaginatedUsers { users, total })
     }
 
     /// Find a user by ID
-    pub async fn find_by_id(&self, id: i32) -> ApiResult<UserResponse> {
+    pub async fn find_by_id(&self, id: i32) -> Result<user::Model, ServiceError> {
         info!(user_id = id, "Fetching user by ID");
 
         let user = user::Entity::find_by_id(id)
@@ -69,15 +69,15 @@ impl UserService {
             .await?
             .ok_or_else(|| {
                 warn!(user_id = id, "User not found");
-                ApiError::NotFound
+                ServiceError::NotFound
             })?;
 
         info!(user_id = id, username = %user.username, "User found");
-        Ok(UserResponse::from(user))
+        Ok(user)
     }
 
     /// Create a new user
-    pub async fn create(&self, dto: CreateUserDto) -> ApiResult<UserResponse> {
+    pub async fn create(&self, dto: CreateUserDto) -> Result<user::Model, ServiceError> {
         info!(username = %dto.username, email = %dto.email, "Creating new user");
 
         // Check if email already exists
@@ -88,7 +88,7 @@ impl UserService {
 
         if existing.is_some() {
             warn!(email = %dto.email, "Email already exists");
-            return Err(ApiError::Conflict("Email already exists".to_string()));
+            return Err(ServiceError::AlreadyExists("Email already exists".to_string()));
         }
 
         let new_user = user::ActiveModel {
@@ -101,11 +101,11 @@ impl UserService {
         let user = new_user.insert(&self.db).await?;
 
         info!(user_id = user.id, username = %user.username, "User created successfully");
-        Ok(UserResponse::from(user))
+        Ok(user)
     }
 
     /// Update an existing user
-    pub async fn update(&self, id: i32, dto: UpdateUserDto) -> ApiResult<UserResponse> {
+    pub async fn update(&self, id: i32, dto: UpdateUserDto) -> Result<user::Model, ServiceError> {
         info!(user_id = id, "Updating user");
 
         // Find existing user
@@ -114,7 +114,7 @@ impl UserService {
             .await?
             .ok_or_else(|| {
                 warn!(user_id = id, "User not found for update");
-                ApiError::NotFound
+                ServiceError::NotFound
             })?;
 
         // Check email uniqueness if changing
@@ -126,7 +126,7 @@ impl UserService {
                     .await?;
 
                 if existing.is_some() {
-                    return Err(ApiError::Conflict("Email already exists".to_string()));
+                    return Err(ServiceError::AlreadyExists("Email already exists".to_string()));
                 }
             }
         }
@@ -144,11 +144,11 @@ impl UserService {
         let updated_user = active_model.update(&self.db).await?;
 
         info!(user_id = id, "User updated successfully");
-        Ok(UserResponse::from(updated_user))
+        Ok(updated_user)
     }
 
     /// Delete a user
-    pub async fn delete(&self, id: i32) -> ApiResult<()> {
+    pub async fn delete(&self, id: i32) -> Result<(), ServiceError> {
         info!(user_id = id, "Deleting user");
 
         let result = user::Entity::delete_by_id(id)
@@ -157,7 +157,7 @@ impl UserService {
 
         if result.rows_affected == 0 {
             warn!(user_id = id, "User not found for deletion");
-            return Err(ApiError::NotFound);
+            return Err(ServiceError::NotFound);
         }
 
         info!(user_id = id, "User deleted successfully");

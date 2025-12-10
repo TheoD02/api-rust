@@ -47,8 +47,12 @@ async fn list_users(
     Query(pagination): Query<PaginationQuery>,
 ) -> ApiResult<PaginatedResponse<UserResponse>> {
     let result = state.user_service.find_all(&pagination).await?;
+
+    // Transform entities to DTOs
+    let users: Vec<UserResponse> = result.users.into_iter().map(Into::into).collect();
+
     Ok(ApiResponseBuilder::paginated(
-        result.users,
+        users,
         result.total,
         pagination.page,
         pagination.per_page,
@@ -75,7 +79,7 @@ async fn get_user(
     Path(id): Path<i32>,
 ) -> ApiResult<ApiResponse<UserResponse>> {
     let user = state.user_service.find_by_id(id).await?;
-    Ok(ApiResponseBuilder::one(user))
+    Ok(ApiResponseBuilder::one(user.into()))
 }
 
 /// POST /users - Create a new user
@@ -97,7 +101,7 @@ async fn create_user(
     ValidatedJson(dto): ValidatedJson<CreateUserDto>,
 ) -> ApiResult<(StatusCode, ApiResponse<UserResponse>)> {
     let user = state.user_service.create(dto).await?;
-    Ok(ApiResponseBuilder::created(user))
+    Ok(ApiResponseBuilder::created(user.into()))
 }
 
 /// PUT /users/:id - Update a user
@@ -124,7 +128,7 @@ async fn update_user(
     ValidatedJson(dto): ValidatedJson<UpdateUserDto>,
 ) -> ApiResult<ApiResponse<UserResponse>> {
     let user = state.user_service.update(id, dto).await?;
-    Ok(ApiResponseBuilder::one(user))
+    Ok(ApiResponseBuilder::one(user.into()))
 }
 
 /// DELETE /users/:id - Delete a user

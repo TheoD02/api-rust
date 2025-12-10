@@ -11,6 +11,28 @@ use thiserror::Error;
 use tracing::error;
 use utoipa::ToSchema;
 
+// ============================================================
+// Service Errors - Business logic errors (no HTTP concepts)
+// ============================================================
+
+/// Service layer errors - pure business logic errors
+/// Equivalent de: Domain exceptions en Symfony (sans HTTP)
+#[derive(Debug, Error)]
+pub enum ServiceError {
+    #[error("Entity not found")]
+    NotFound,
+
+    #[error("Entity already exists: {0}")]
+    AlreadyExists(String),
+
+    #[error("Database error: {0}")]
+    Database(#[from] sea_orm::DbErr),
+}
+
+// ============================================================
+// API Errors - HTTP layer errors
+// ============================================================
+
 /// Error response format
 /// Equivalent de: normalisation des erreurs en Symfony
 #[derive(Debug, Serialize, ToSchema)]
@@ -21,7 +43,7 @@ pub struct ErrorResponse {
     pub details: Option<String>,
 }
 
-/// API Error types
+/// API Error types - HTTP layer errors
 /// Equivalent de: HttpException, NotFoundHttpException, etc. en Symfony
 #[derive(Debug, Error)]
 pub enum ApiError {
@@ -42,6 +64,18 @@ pub enum ApiError {
 
     #[error("Database error")]
     DatabaseError(#[from] sea_orm::DbErr),
+}
+
+/// Convert ServiceError to ApiError
+/// This is where business errors become HTTP errors
+impl From<ServiceError> for ApiError {
+    fn from(err: ServiceError) -> Self {
+        match err {
+            ServiceError::NotFound => ApiError::NotFound,
+            ServiceError::AlreadyExists(msg) => ApiError::Conflict(msg),
+            ServiceError::Database(db_err) => ApiError::DatabaseError(db_err),
+        }
+    }
 }
 
 impl ApiError {
