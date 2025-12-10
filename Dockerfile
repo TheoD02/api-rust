@@ -19,6 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/* /app/app
+COPY --from=builder /app/target/release/rust-api /app/app
 
 CMD ["/app/app"]
