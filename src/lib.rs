@@ -6,6 +6,7 @@ pub mod controllers;
 pub mod dto;
 pub mod entities;
 pub mod error;
+pub mod fixtures;
 pub mod response;
 pub mod services;
 pub mod validation;
