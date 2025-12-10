@@ -55,7 +55,8 @@ use crate::response::PaginationMeta;
         (name = "users", description = "User management endpoints")
     ),
     servers(
-        (url = "http://localhost:8080", description = "Local development server")
+        (url = "http://localhost:8080", description = "Local development server"),
+        (url = "https://api-rust.theo-corp.fr", description = "Production server"),
     )
 )]
 pub struct ApiDoc;
