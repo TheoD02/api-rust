@@ -1,5 +1,4 @@
 use axum::{
-    async_trait,
     extract::{rejection::JsonRejection, FromRequest, Request},
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -67,7 +66,6 @@ impl IntoResponse for ValidationError {
 
 pub struct ValidatedJson<T>(pub T);
 
-#[async_trait]
 impl<S, T> FromRequest<S> for ValidatedJson<T>
 where
     S: Send + Sync,

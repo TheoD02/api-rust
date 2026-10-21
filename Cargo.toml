@@ -4,16 +4,16 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = "0.7"
+axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 # ORM (comme Doctrine)
-sea-orm = { version = "1", features = ["sqlx-sqlite", "runtime-tokio-native-tls"] }
+sea-orm = { version = "2", features = ["sqlx-sqlite", "runtime-tokio-native-tls"] }
 
 # Pour le state partagé et middleware (comme les services Symfony)
-tower-http = { version = "0.5", features = ["cors", "trace"] }
+tower-http = { version = "0.7", features = ["cors", "trace"] }
 
 # Logging (comme Monolog en Symfony)
 tracing = "0.1"
@@ -27,18 +27,18 @@ async-trait = "0.1"
 
 # Migrations (comme doctrine:migrations)
 migration = { path = "migration" }
-sea-orm-migration = "1.1"
+sea-orm-migration = "2.0"
 
 # Validation (comme Symfony Validator)
-validator = { version = "0.19", features = ["derive"] }
+validator = { version = "0.21", features = ["derive"] }
 thiserror = "2"
 
 # OpenAPI / Swagger (comme NelmioApiDocBundle)
-utoipa = { version = "5", features = ["axum_extras", "chrono"] }
-utoipa-swagger-ui = { version = "8", features = ["axum"] }
+utoipa = { version = "6", features = ["axum_extras", "chrono"] }
+utoipa-swagger-ui = { version = "10", features = ["axum"] }
 
 [dev-dependencies]
 # Tests HTTP (comme WebTestCase en Symfony)
-axum-test = "16"
+axum-test = "21"
 # Async test runtime
 tokio-test = "0.4"

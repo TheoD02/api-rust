@@ -24,9 +24,9 @@ impl PostController {
         Router::new()
             .route("/posts", get(list_posts))
             .route("/posts", post(create_post))
-            .route("/posts/:id", get(get_post))
-            .route("/posts/:id", put(update_post))
-            .route("/posts/:id", delete(delete_post))
+            .route("/posts/{id}", get(get_post))
+            .route("/posts/{id}", put(update_post))
+            .route("/posts/{id}", delete(delete_post))
     }
 }
 
