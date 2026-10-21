@@ -16,7 +16,7 @@ use rust_api::services::{PostService, UserService};
 /// Equivalent de: static::createClient() en Symfony
 pub async fn create_test_server() -> TestServer {
     let app = create_test_app().await;
-    TestServer::new(app).unwrap()
+    TestServer::new(app)
 }
 
 /// Create the test application router
